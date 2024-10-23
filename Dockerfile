@@ -7,11 +7,12 @@ COPY package*.json ./
 RUN npm install -g @angular/cli
 RUN --mount=type=cache,target=/usr/src/app/.npm \
   npm set cache /usr/src/app/.npm && \
-  npm install
+  npm ci
 COPY . .
-RUN npm run build
+RUN npm run build --prod
 #-------------------------------------------
 FROM nginxinc/nginx-unprivileged:1.23-alpine-perl
 COPY --link nginx.conf /etc/nginx/conf.d/default.conf
-COPY --link --from=build usr/src/app/dist/ /usr/share/nginx/html
-EXPOSE 8080
+COPY --link --from=build usr/src/app/dist/frontend /usr/share/nginx/html
+CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 80
