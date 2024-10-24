@@ -1,17 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { WsService } from "../services/ws.service";
+import { Observable, Subscription } from "rxjs";
+import { WsService } from "../core/services/ws.service";
+import { TaskModel } from '../shared/models/tasks.interface';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent implements OnInit {
-  todos: string[] = [];
-  newTodo: string = '';
+export class HomeComponent implements OnInit, OnDestroy {
+  tasks$ = new Observable<TaskModel[]>();
+  newTask: string = '';
+
+  subscriptions: Subscription[] = [];
 
   isConnected: boolean = false;
 
@@ -20,25 +25,28 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.loadData();
-    this.wsService.onMessage().subscribe(a => console.log(a));
-    this.wsService.sendMessage('oi do front');
-    this.wsService.isConnected().subscribe(connected => this.isConnected = connected);
+    this.subscriptions.push(this.wsService.isConnected().subscribe(connected => this.isConnected = connected));
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.map(sub => sub.unsubscribe());
   }
 
   async loadData() {
-    this.todos = this.wsService.getTodoArr();
+    this.wsService.getTasks();
+    this.tasks$ = this.wsService.tasks$;
   }
 
   addTodo() {
-    console.log(this.newTodo)
-    if (this.newTodo.trim() === '') return;
+    if (this.newTask.trim() === '') return;
 
-    this.wsService.sendMessage(this.newTodo);
-    this.newTodo = '';
+    this.wsService.createTask(this.newTask);
+    this.newTask = '';
   }
 
   connectWebSocket() {
-    this.wsService.connect()
+    this.wsService.connect();
+    this.wsService.getTasks();
   }
 
   disconnectWebSocket() {
