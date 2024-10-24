@@ -1,12 +1,13 @@
 import { ApplicationRef, inject, Injectable } from '@angular/core';
 import { Socket } from 'ngx-socket-io';
 import { BehaviorSubject, first, map, Observable } from 'rxjs';
+import { TaskModel } from '../../shared/models/tasks.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WsService {
-  currentMessage$ = this.socket.fromEvent<string>('message');
+  tasks$: Observable<TaskModel[]> = this.socket.fromEvent<TaskModel[]>('tasks');
   socketIsConnected$ = new BehaviorSubject<boolean>(false);
 
   constructor(private socket: Socket) {
@@ -16,12 +17,6 @@ export class WsService {
         this.connect()
       });
   }
-
-  sendMessage(message: string) {
-    this.socket.emit('message', message);
-  }
-
-  todoArr: string[] = [];
 
   connect() {
     this.socket.connect();
@@ -37,13 +32,17 @@ export class WsService {
     return this.socketIsConnected$.asObservable();
   }
 
-  onMessage() {
-    return this.currentMessage$.pipe(
-      map(message => message)
-    );
+  getTasks() {
+    console.log('buscou')
+    this.socket.emit('get_tasks', (tasks: TaskModel[]) => {
+      console.log(tasks)
+      this.tasks$.pipe(
+        map(() => tasks)
+      )
+    });
   }
 
-  getTodoArr(): string[] {
-    return this.todoArr;
+  createTask(newTask: string) {
+    this.socket.emit('create_task', newTask);
   }
 }

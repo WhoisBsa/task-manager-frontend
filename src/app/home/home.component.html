@@ -1,10 +1,10 @@
 <h1>Real-time To-Do List</h1>
 <ul>
-@for (todo of todos; track $index) {
-  <li>{{ todo }}</li>
+@for (todo of (tasks$ | async); track $index) {
+  <li>{{ todo.description }}</li>
 }
 </ul>
-<input [(ngModel)]="newTodo" placeholder="Add a new todo">
+<input [(ngModel)]="newTask" placeholder="Add a new todo">
 <button (click)="addTodo()">Add</button>
 <button (click)="connectWebSocket()" [disabled]="isConnected">Connect</button>
 <button (click)="disconnectWebSocket()" [disabled]="!isConnected">Disconnect</button>
