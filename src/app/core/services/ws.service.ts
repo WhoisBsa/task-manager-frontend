@@ -33,9 +33,7 @@ export class WsService {
   }
 
   getTasks() {
-    console.log('buscou')
     this.socket.emit('get_tasks', (tasks: TaskModel[]) => {
-      console.log(tasks)
       this.tasks$.pipe(
         map(() => tasks)
       )
