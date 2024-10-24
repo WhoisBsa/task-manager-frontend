@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { HomeComponent } from './home/home.component';
 import { SocketIoConfig } from "ngx-socket-io";
 import { environment } from "../environments/environment";
+import { HomeComponent } from './home/home.component';
 
 const apiUrl = environment.apiUrl;
 const config: SocketIoConfig = {url: apiUrl, options: {}};
